@@ -16,6 +16,21 @@ from .exceptions import (
     UnsupportedClientError,
     ValidationError,
 )
+from .types import (
+    Completion,
+    FieldMapper,
+    GeoPoint,
+    GeoShape,
+    IPAddress,
+    TokenCount,
+    TypeInfo,
+    TypeInspector,
+    get_backend,
+    has_dsl,
+    is_elasticsearch,
+    is_opensearch,
+    universal_dsl,
+)
 
 
 __version__ = "0.1.0"
@@ -27,6 +42,20 @@ __all__ = [
     "BaseElasticAdapter",
     "create_adapter",
     "get_adapter_for_client_type",
+    # Type system
+    "universal_dsl",
+    "has_dsl",
+    "get_backend",
+    "is_elasticsearch",
+    "is_opensearch",
+    "TypeInspector",
+    "TypeInfo",
+    "FieldMapper",
+    "GeoPoint",
+    "GeoShape",
+    "IPAddress",
+    "Completion",
+    "TokenCount",
     # Exceptions
     "StrawberryElasticError",
     "AdapterError",

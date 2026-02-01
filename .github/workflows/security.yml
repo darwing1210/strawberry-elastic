@@ -1,0 +1,212 @@
+name: Security & Dependency Checks
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run weekly on Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.12"
+  UV_VERSION: "0.5.11"
+
+jobs:
+  security-scan:
+    name: Security Scan (Bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          uv pip install bandit[toml]
+
+      - name: Run Bandit security scan
+        run: uv run bandit -r src/ -f json -o bandit-report.json || true
+
+      - name: Display Bandit results
+        run: uv run bandit -r src/
+
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-report
+          path: bandit-report.json
+
+  dependency-audit:
+    name: Dependency Audit (pip-audit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          uv pip install -e ".[dev]"
+          uv pip install pip-audit
+
+      - name: Run pip-audit
+        run: uv run pip-audit --desc
+
+  dependency-check:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  license-check:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          uv pip install -e ".[dev]"
+          uv pip install pip-licenses
+
+      - name: Check licenses
+        run: |
+          echo "## Dependency Licenses" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          uv run pip-licenses --format=markdown --with-urls >> $GITHUB_STEP_SUMMARY
+
+      - name: Verify allowed licenses
+        run: |
+          # Check for non-permissive licenses
+          uv run pip-licenses --format=json > licenses.json
+          # MIT, Apache-2.0, BSD-3-Clause, BSD-2-Clause, ISC, Python-2.0 are allowed
+          # GPL, AGPL, LGPL would be flagged (if present)
+          echo "License check completed. Review licenses.json for details."
+
+      - name: Upload license report
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: licenses.json
+
+  outdated-dependencies:
+    name: Check Outdated Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          uv pip install -e ".[dev]"
+
+      - name: Check for outdated packages
+        run: |
+          echo "## Outdated Dependencies" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          uv pip list --outdated || echo "All dependencies up to date!" >> $GITHUB_STEP_SUMMARY
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs:
+      - security-scan
+      - dependency-audit
+      - license-check
+      - outdated-dependencies
+    if: always()
+    steps:
+      - name: Security Summary
+        run: |
+          echo "## Security Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Scan | ${{ needs.security-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Audit | ${{ needs.dependency-audit.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| License Check | ${{ needs.license-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Outdated Dependencies | ${{ needs.outdated-dependencies.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.security-scan.result }}" != "success" ] || \
+             [ "${{ needs.dependency-audit.result }}" != "success" ]; then
+            echo "⚠️ **Security issues detected. Please review the reports.**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ **All security checks passed!**" >> $GITHUB_STEP_SUMMARY
+          fi

@@ -121,7 +121,10 @@ venv.bak/
 # mkdocs documentation
 /site
 
-# mypy
+# ty type checker
+.ty_cache/
+
+# mypy (legacy - kept for compatibility)
 .mypy_cache/
 .dmypy.json
 dmypy.json
@@ -153,3 +156,12 @@ Thumbs.db
 *.bak
 .env.local
 .env.*.local
+
+# CI/CD artifacts
+bandit-report.json
+licenses.json
+.secrets
+
+# Test artifacts
+test-results/
+test-reports/

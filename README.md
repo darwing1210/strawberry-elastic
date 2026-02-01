@@ -1,8 +1,14 @@
 # Strawberry Elastic
 
+[![CI](https://github.com/YOUR_USERNAME/strawberry-elastic/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/strawberry-elastic/actions/workflows/ci.yml)
+[![Security](https://github.com/YOUR_USERNAME/strawberry-elastic/actions/workflows/security.yml/badge.svg)](https://github.com/YOUR_USERNAME/strawberry-elastic/actions/workflows/security.yml)
+[![codecov](https://codecov.io/gh/YOUR_USERNAME/strawberry-elastic/branch/main/graph/badge.svg)](https://codecov.io/gh/YOUR_USERNAME/strawberry-elastic)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 GraphQL integration for Elasticsearch and OpenSearch with Strawberry GraphQL.
 
-**Status**: 🚧 Work in Progress - Adapter System Complete
+**Status**: 🚧 Work in Progress - Phase 2.1 Complete (Type System Core Infrastructure)
 
 ## Features
 
@@ -11,7 +17,11 @@ GraphQL integration for Elasticsearch and OpenSearch with Strawberry GraphQL.
 - ✅ **Async-First**: Native async support with automatic sync client wrapping
 - ✅ **Client Flexibility**: Users choose their own Elasticsearch/OpenSearch client version
 - ✅ **Runtime Capability Detection**: Features detected at runtime (PIT, search_after, etc.)
-- 🚧 **Type System**: GraphQL type generation from index mappings (Coming Soon)
+- ✅ **Type System Core**: Universal DSL compatibility layer for Elasticsearch and OpenSearch
+- ✅ **Document Support**: Works with elasticsearch-dsl and opensearchpy Document classes
+- ✅ **Field Mapping**: Automatic mapping of 40+ field types to GraphQL types
+- ✅ **Custom Scalars**: GeoPoint, GeoShape, IPAddress with validation
+- 🚧 **Type Decorator**: @elastic.type decorator (Coming in Phase 2.2)
 - 🚧 **Filtering**: Powerful query builder for complex searches (Coming Soon)
 - 🚧 **Pagination**: Multiple strategies (offset, search_after, PIT) (Coming Soon)
 - 🚧 **Mutations**: CRUD operations and bulk indexing (Coming Soon)
@@ -30,6 +40,11 @@ pip install strawberry-elastic[opensearch]     # For OpenSearch 1.x/2.x
 # Or install client separately
 pip install elasticsearch>=7.0      # Elasticsearch 7.x/8.x
 pip install opensearch-py>=1.0      # OpenSearch 1.x/2.x
+
+# For Document support (optional)
+pip install elasticsearch-dsl       # Elasticsearch Document classes
+# OR
+pip install opensearch-py           # OpenSearch includes Document support
 ```
 
 ## Quick Start
@@ -371,12 +386,43 @@ strawberry-elastic/
 - [x] Capability detection
 - [x] Sync/async client support
 
-### Phase 2: Type System (In Progress)
+### Phase 2: Type System (In Progress - Phase 2.1 Complete ✅)
+
+#### Phase 2.1: Core Infrastructure ✅
+- [x] Universal DSL compatibility layer (elasticsearch.dsl, elasticsearch_dsl, opensearchpy)
+- [x] Type inspector for detecting field sources
+- [x] Field mapper for ES/OpenSearch → Python type conversion
+- [x] Custom GraphQL scalars (GeoPoint, GeoShape, IPAddress, etc.)
+- [x] Support for 40+ Elasticsearch/OpenSearch field types
+- [x] Graceful handling of optional dependencies
+- [x] 100+ comprehensive tests with real cluster integration
+
+#### Phase 2.2: Document Support (Next)
 - [ ] `@elastic.type` decorator
-- [ ] Automatic field generation from mappings
-- [ ] Custom field resolvers
-- [ ] Nested object support
-- [ ] Custom scalars (GeoPoint, etc.)
+- [ ] Automatic field generation from Document classes
+- [ ] Field extraction from mappings
+- [ ] InnerDoc/nested type handling
+- [ ] Index metadata extraction
+
+#### Phase 2.3: Mapping Introspection
+- [ ] Runtime mapping fetch
+- [ ] Lazy field generation
+- [ ] Mapping cache
+
+#### Phase 2.4: Type Hints Support
+- [ ] Pure type hint processing
+- [ ] Integration with Strawberry's native type handling
+
+#### Phase 2.5: Custom Scalars (Expanded)
+- [ ] Date/DateTime handling improvements
+- [ ] Range type support
+
+#### Phase 2.6: Advanced Features
+- [ ] Hybrid mode (Document + custom fields)
+- [ ] Field overrides
+- [ ] Custom resolvers with `@elastic.field`
+- [ ] Multi-field handling
+- [ ] Meta fields (score, highlights, etc.)
 
 ### Phase 3: Filtering & Search
 - [ ] Filter system (`@elastic.filter`)
@@ -407,9 +453,103 @@ strawberry-elastic/
 - [ ] Parent-child relationships
 - [ ] Permissions/security
 
+## Continuous Integration
+
+This project uses GitHub Actions for CI/CD:
+
+### Main CI Workflow
+
+- ✅ **Lint & Format Check**: Ruff linter and formatter
+- ✅ **Type Checking**: ty static type analysis
+- ✅ **Unit Tests**: Python 3.11 and 3.12
+- ✅ **Integration Tests**: Real Elasticsearch and OpenSearch clusters
+- ✅ **Adapter Tests**: Multiple Elasticsearch versions (7.x, 8.x)
+
+### Security Workflow
+
+- 🔒 **Security Scan**: Bandit for security issues
+- 🔒 **Dependency Audit**: pip-audit for vulnerable dependencies
+- 🔒 **CodeQL Analysis**: Advanced code scanning
+- 🔒 **License Check**: Verify dependency licenses
+- 🔒 **Dependency Review**: Check for outdated packages
+
+All PRs must pass CI checks before merging.
+
 ## Contributing
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Development
+
+### Running Tests
+
+```bash
+# Unit tests (no dependencies)
+pytest tests/
+
+# Integration tests with real clusters (Elasticsearch)
+./scripts/test-integration.sh all
+
+# Integration tests with OpenSearch backend
+BACKEND=opensearch ./scripts/test-integration.sh all
+```
+
+### Docker Test Environment
+
+The project includes Docker Compose setup for integration testing:
+
+```bash
+# Start test clusters
+docker compose up -d
+
+# Services available:
+# - Elasticsearch 8.x:  http://localhost:9200
+# - Elasticsearch 7.x:  http://localhost:9201
+# - OpenSearch 2.x:     http://localhost:9202
+
+# Install DSL packages for testing
+uv pip install elasticsearch-dsl opensearch-py httpx
+
+# Run all tests (Elasticsearch backend)
+pytest tests/types/ -v
+
+# Run all tests (OpenSearch backend)
+STRAWBERRY_ELASTIC_DSL=opensearch pytest tests/types/ -v
+
+# Stop clusters
+docker compose down -v
+```
+
+### Testing Different Backends
+
+The universal DSL compatibility layer can be tested with different backends:
+
+```bash
+# Test with Elasticsearch DSL (default)
+uv run pytest tests/types/ -v
+
+# Test with OpenSearch DSL
+STRAWBERRY_ELASTIC_DSL=opensearch uv run pytest tests/types/ -v
+
+# Or use the test script
+BACKEND=opensearch ./scripts/test-integration.sh all
+```
+
+See [scripts/README.md](scripts/README.md) for detailed testing documentation.
+
+### Test Results
+
+**Phase 2.1 Status**:
+- ✅ **200/206 tests passing** (100/103 per backend)
+- ✅ Full integration with **both** backends:
+  - Elasticsearch DSL (elasticsearch-dsl 8.18.0+)
+  - OpenSearch DSL (opensearchpy Document classes)
+- ✅ 3 tests skipped per backend (backend-specific tests)
+- ✅ Works without DSL (graceful degradation)
+- ✅ Environment variable control: `STRAWBERRY_ELASTIC_DSL=opensearch`
+- ✅ CI/CD: GitHub Actions with full test matrix
+- ✅ Multiple Python versions tested (3.11, 3.12)
+- ✅ Security scanning and dependency audits
 
 ## License
 

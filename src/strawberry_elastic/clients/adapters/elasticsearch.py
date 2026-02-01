@@ -177,7 +177,7 @@ class ElasticsearchAdapter(BaseElasticAdapter):
         **kwargs: Any,
     ) -> dict[str, Any]:
         """Get multiple documents by IDs."""
-        body = {"ids": ids}
+        body: dict[str, Any] = {"ids": ids}
         if source is not None:
             body["_source"] = source
 
@@ -209,7 +209,7 @@ class ElasticsearchAdapter(BaseElasticAdapter):
         **kwargs: Any,
     ) -> dict[str, Any]:
         """Index a document."""
-        params = {}
+        params: dict[str, Any] = {}
         if id is not None:
             params["id"] = id
         if refresh:
@@ -262,7 +262,7 @@ class ElasticsearchAdapter(BaseElasticAdapter):
         **kwargs: Any,
     ) -> dict[str, Any]:
         """Execute bulk operations."""
-        params = {}
+        params: dict[str, Any] = {}
         if index is not None:
             params["index"] = index
         if refresh:

@@ -293,7 +293,7 @@ async def clean_test_index(elasticsearch_adapter, test_index_name):
     try:
         await elasticsearch_adapter.delete_index(test_index_name)
     except Exception:
-        pass
+        pass  # Index may not exist yet
 
     yield test_index_name
 
@@ -301,7 +301,7 @@ async def clean_test_index(elasticsearch_adapter, test_index_name):
     try:
         await elasticsearch_adapter.delete_index(test_index_name)
     except Exception:
-        pass
+        pass  # Cleanup may fail if index was already deleted
 
 
 # Document class fixtures (requires DSL)
@@ -407,4 +407,4 @@ def cleanup_test_indices():
                         print(f"\nFailed to clean up {index_name}: {e}")
             client.close()
         except Exception:
-            pass
+            pass  # Ignore cleanup errors during pytest shutdown

@@ -149,6 +149,7 @@ select = [
 ]
 ignore = [
     "ANN401",  # Dynamically typed expressions (Any)
+    "PLC0415", # Import outside top-level (used for optional dependencies)
     "PLR0913", # Too many arguments to function call
     "TRY003",  # Avoid specifying long messages outside exception class
 ]
@@ -158,7 +159,6 @@ ignore = [
     "ANN",     # No need for type annotations in tests
     "PLR2004", # Magic value used in comparison
     "S101",    # Use of assert detected
-    "PLC0415", # Import outside top-level (needed for optional dependencies)
     "N806",    # Variable name should be lowercase (DSL classes are intentionally capitalized)
     "TRY300",  # Consider moving statement to else block
     "SIM105",  # Use contextlib.suppress
@@ -170,9 +170,6 @@ ignore = [
 "src/strawberry_elastic/clients/adapters/*.py" = [
     "PLR2004", # Magic value used in comparison (version numbers)
     "TID252",  # Relative imports from parent modules (adapter pattern)
-]
-"src/strawberry_elastic/clients/factory.py" = [
-    "PLC0415", # Import inside function (lazy loading for adapters)
 ]
 "src/strawberry_elastic/__init__.py" = [
     "RUF022",  # __all__ sorting with comments

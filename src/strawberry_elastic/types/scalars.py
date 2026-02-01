@@ -22,26 +22,6 @@ _IPV4_PARTS_COUNT = 4
 _MAX_IPV4_OCTET = 255
 
 
-@strawberry.scalar(
-    serialize=lambda v: _serialize_geo_point(v),
-    parse_value=lambda v: _parse_geo_point(v),
-    description="A geographic point with latitude and longitude coordinates",
-)
-class GeoPoint:
-    """
-    Represents a geographic point.
-
-    Can be represented as:
-    - Object: {"lat": 41.12, "lon": -71.34}
-    - Array: [lon, lat] (note: longitude first, following GeoJSON convention)
-    - String: "lat,lon" or WKT format
-
-    GraphQL representation is always as an object with lat/lon fields.
-    """
-
-    __slots__ = ()
-
-
 def _serialize_geo_point(value: Any) -> dict[str, float] | None:
     """
     Serialize a geo_point value to GraphQL.
@@ -117,9 +97,34 @@ def _parse_geo_point(value: Any) -> dict[str, float]:
     return {"lat": lat, "lon": lon}
 
 
+def _identity(v: Any) -> Any:
+    """Identity function for GeoShape serialization."""
+    return v
+
+
 @strawberry.scalar(
-    serialize=lambda v: v,
-    parse_value=lambda v: v,
+    serialize=_serialize_geo_point,
+    parse_value=_parse_geo_point,
+    description="A geographic point with latitude and longitude coordinates",
+)
+class GeoPoint:
+    """
+    Represents a geographic point.
+
+    Can be represented as:
+    - Object: {"lat": 41.12, "lon": -71.34}
+    - Array: [lon, lat] (note: longitude first, following GeoJSON convention)
+    - String: "lat,lon" or WKT format
+
+    GraphQL representation is always as an object with lat/lon fields.
+    """
+
+    __slots__ = ()
+
+
+@strawberry.scalar(
+    serialize=_identity,
+    parse_value=_identity,
     description="A geographic shape (polygon, multipolygon, etc.) in GeoJSON format",
 )
 class GeoShape:
@@ -136,19 +141,9 @@ class GeoShape:
 
 
 # IP Address scalar with validation
-@strawberry.scalar(
-    serialize=lambda v: str(v) if v is not None else None,
-    parse_value=lambda v: _parse_ip_address(v),
-    description="An IPv4 or IPv6 address",
-)
-class IPAddress:
-    """
-    Represents an IP address (IPv4 or IPv6).
-
-    Basic validation is performed to ensure the format is correct.
-    """
-
-    __slots__ = ()
+def _serialize_ip_address(v: Any) -> str | None:
+    """Serialize IP address to string."""
+    return str(v) if v is not None else None
 
 
 def _parse_ip_address(value: Any) -> str:
@@ -201,6 +196,21 @@ def _validate_ipv4_parts(parts: list[str]) -> None:
         num = int(part)
         if not 0 <= num <= _MAX_IPV4_OCTET:
             raise ValueError(f"Invalid IPv4 octet: {part}")
+
+
+@strawberry.scalar(
+    serialize=_serialize_ip_address,
+    parse_value=_parse_ip_address,
+    description="An IPv4 or IPv6 address",
+)
+class IPAddress:
+    """
+    Represents an IP address (IPv4 or IPv6).
+
+    Basic validation is performed to ensure the format is correct.
+    """
+
+    __slots__ = ()
 
 
 # Type aliases for fields that don't need custom scalars but benefit from semantic naming

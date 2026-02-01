@@ -76,7 +76,7 @@ class UniversalDSL:
                             module=dsl,
                         )
                 except (ImportError, AttributeError):
-                    pass
+                    pass  # Try next backend option
 
             elif forced_backend == "elasticsearch_dsl":
                 try:
@@ -89,7 +89,7 @@ class UniversalDSL:
                             module=dsl,
                         )
                 except (ImportError, AttributeError):
-                    pass
+                    pass  # Try next backend option
 
             elif forced_backend in ("opensearch", "opensearchpy"):
                 try:
@@ -102,7 +102,7 @@ class UniversalDSL:
                             module=document,
                         )
                 except (ImportError, AttributeError):
-                    pass
+                    pass  # Try next backend option
 
         # Auto-detect: Try Elasticsearch 8.18+ (built-in DSL)
         try:
@@ -116,7 +116,7 @@ class UniversalDSL:
                     module=dsl,
                 )
         except (ImportError, AttributeError):
-            pass
+            pass  # Try next DSL library
 
         # Try Elasticsearch 7.x-8.17.x (separate package)
         try:
@@ -129,7 +129,7 @@ class UniversalDSL:
                     module=dsl,
                 )
         except (ImportError, AttributeError):
-            pass
+            pass  # Try next DSL library
 
         # Try OpenSearch
         try:
@@ -142,7 +142,7 @@ class UniversalDSL:
                     module=document,
                 )
         except (ImportError, AttributeError):
-            pass
+            pass  # No DSL library available
 
         # No DSL available
         return DSLInfo(available=False, backend=None, module=None)

@@ -84,7 +84,7 @@ class ElasticsearchAdapter(BaseElasticAdapter):
             if len(parts) >= 2:
                 return int(parts[1])
         except (ValueError, IndexError):
-            pass
+            pass  # Return default version 0 if parsing fails
         return 0
 
     async def _execute(self, method_name: str, *args: Any, **kwargs: Any) -> Any:

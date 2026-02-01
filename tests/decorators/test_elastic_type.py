@@ -215,7 +215,7 @@ class TestElasticFieldDecorator:
         class Article:
             @elastic.field
             def full_title(self) -> str:
-                return f"{self.title} - Full"
+                return f"{self.title} - Full"  # type: ignore[attr-defined]
 
         # Check that the method is marked
         assert hasattr(Article.full_title, "_elastic_field")
@@ -228,7 +228,7 @@ class TestElasticFieldDecorator:
         class Article:
             @elastic.field(name="customName")
             def full_title(self) -> str:
-                return f"{self.title} - Full"
+                return f"{self.title} - Full"  # type: ignore[attr-defined]
 
         assert hasattr(Article.full_title, "_elastic_field_name")
         assert Article.full_title._elastic_field_name == "customName"
@@ -240,7 +240,7 @@ class TestElasticFieldDecorator:
         class Article:
             @elastic.field(description="The full title of the article")
             def full_title(self) -> str:
-                return f"{self.title} - Full"
+                return f"{self.title} - Full"  # type: ignore[attr-defined]
 
         assert hasattr(Article.full_title, "_elastic_field_description")
         assert Article.full_title._elastic_field_description == "The full title of the article"
@@ -252,7 +252,7 @@ class TestElasticFieldDecorator:
         class Article:
             @elastic.field
             def full_title(self) -> str:
-                return f"{self.title} - Full"
+                return f"{self.title} - Full"  # type: ignore[attr-defined]
 
         assert hasattr(Article.full_title, "_elastic_field")
 
@@ -263,7 +263,7 @@ class TestElasticFieldDecorator:
         class Article:
             @elastic.field()
             def full_title(self) -> str:
-                return f"{self.title} - Full"
+                return f"{self.title} - Full"  # type: ignore[attr-defined]
 
         assert hasattr(Article.full_title, "_elastic_field")
 
@@ -274,11 +274,11 @@ class TestElasticFieldDecorator:
         class Article:
             @elastic.field
             def full_title(self) -> str:
-                return f"{self.title} - Full"
+                return f"{self.title} - Full"  # type: ignore[attr-defined]
 
             @elastic.field
             def author_upper(self) -> str:
-                return self.author.upper()
+                return self.author.upper()  # type: ignore[attr-defined]
 
         inspector = TypeInspector()
         info = inspector.inspect(Article)
@@ -299,7 +299,7 @@ class TestDecoratorEdgeCases:
             title: str
             author: str
 
-        elastic_meta = Article._elastic_type
+        elastic_meta = Article._elastic_type  # type: ignore[attr-defined]
         assert elastic_meta["document_class"] is None
 
     def test_multiple_decorations(self):

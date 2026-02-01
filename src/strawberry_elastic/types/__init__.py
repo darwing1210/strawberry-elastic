@@ -19,23 +19,19 @@ from .scalars import Completion, GeoPoint, GeoShape, IPAddress, TokenCount
 
 
 __all__ = [
-    # DSL compatibility
-    "universal_dsl",
-    "has_dsl",
-    "get_backend",
-    "is_elasticsearch",
-    "is_opensearch",
     "Backend",
-    # Type inspection
-    "TypeInspector",
-    "TypeInfo",
-    "TypeSource",
-    # Field mapping
+    "Completion",
     "FieldMapper",
-    # Custom scalars
     "GeoPoint",
     "GeoShape",
     "IPAddress",
-    "Completion",
     "TokenCount",
+    "TypeInfo",
+    "TypeInspector",
+    "TypeSource",
+    "get_backend",
+    "has_dsl",
+    "is_elasticsearch",
+    "is_opensearch",
+    "universal_dsl",
 ]

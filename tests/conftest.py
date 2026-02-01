@@ -9,7 +9,6 @@ Provides fixtures for:
 """
 
 import os
-from typing import AsyncGenerator, Generator
 
 import pytest
 
@@ -36,7 +35,7 @@ def pytest_configure(config):
 def is_elasticsearch_available() -> bool:
     """Check if Elasticsearch is available."""
     try:
-        import httpx
+        import httpx  # type: ignore[import-untyped]
 
         response = httpx.get(f"http://{ES_HOST}:{ES_PORT}", timeout=2.0)
         return response.status_code == 200
@@ -47,7 +46,7 @@ def is_elasticsearch_available() -> bool:
 def is_elasticsearch_7_available() -> bool:
     """Check if Elasticsearch 7.x is available."""
     try:
-        import httpx
+        import httpx  # type: ignore[import-untyped]
 
         response = httpx.get(f"http://{ES_HOST}:{ES7_PORT}", timeout=2.0)
         return response.status_code == 200
@@ -58,7 +57,7 @@ def is_elasticsearch_7_available() -> bool:
 def is_opensearch_available() -> bool:
     """Check if OpenSearch is available."""
     try:
-        import httpx
+        import httpx  # type: ignore[import-untyped]
 
         response = httpx.get(f"http://{ES_HOST}:{OS_PORT}", timeout=2.0)
         return response.status_code == 200
@@ -105,9 +104,14 @@ def elasticsearch_client():
         pytest.skip("Elasticsearch not available")
 
     try:
-        from elasticsearch import Elasticsearch
+        from elasticsearch import Elasticsearch  # type: ignore[import-untyped]
 
-        client = Elasticsearch([f"http://{ES_HOST}:{ES_PORT}"])
+        # Configure client with compatibility mode for elasticsearch-py v9+
+        client = Elasticsearch(
+            [f"http://{ES_HOST}:{ES_PORT}"],
+            # Set compatibility header for v8 (works with ES 7.x and 8.x)
+            headers={"Accept": "application/vnd.elasticsearch+json; compatible-with=8"},
+        )
         # Verify connection
         info = client.info()
         print(f"\nConnected to Elasticsearch {info['version']['number']}")
@@ -129,9 +133,14 @@ def elasticsearch_7_client():
         pytest.skip("Elasticsearch 7.x not available")
 
     try:
-        from elasticsearch import Elasticsearch
+        from elasticsearch import Elasticsearch  # type: ignore[import-untyped]
 
-        client = Elasticsearch([f"http://{ES_HOST}:{ES7_PORT}"])
+        # Configure client with compatibility mode for elasticsearch-py v9+
+        client = Elasticsearch(
+            [f"http://{ES_HOST}:{ES7_PORT}"],
+            # Set compatibility header for v7
+            headers={"Accept": "application/vnd.elasticsearch+json; compatible-with=7"},
+        )
         # Verify connection
         info = client.info()
         print(f"\nConnected to Elasticsearch {info['version']['number']}")
@@ -152,9 +161,14 @@ async def async_elasticsearch_client():
         pytest.skip("Elasticsearch not available")
 
     try:
-        from elasticsearch import AsyncElasticsearch
+        from elasticsearch import AsyncElasticsearch  # type: ignore[import-untyped]
 
-        client = AsyncElasticsearch([f"http://{ES_HOST}:{ES_PORT}"])
+        # Configure client with compatibility mode for elasticsearch-py v9+
+        client = AsyncElasticsearch(
+            [f"http://{ES_HOST}:{ES_PORT}"],
+            # Set compatibility header for v8 (works with ES 7.x and 8.x)
+            headers={"Accept": "application/vnd.elasticsearch+json; compatible-with=8"},
+        )
         # Verify connection
         info = await client.info()
         print(f"\nConnected to Elasticsearch {info['version']['number']} (async)")
@@ -177,7 +191,7 @@ def opensearch_client():
         pytest.skip("OpenSearch not available")
 
     try:
-        from opensearchpy import OpenSearch
+        from opensearchpy import OpenSearch  # type: ignore[import-untyped]
 
         client = OpenSearch(
             hosts=[{"host": ES_HOST, "port": OS_PORT}],
@@ -207,7 +221,7 @@ async def async_opensearch_client():
         pytest.skip("OpenSearch not available")
 
     try:
-        from opensearchpy import AsyncOpenSearch
+        from opensearchpy import AsyncOpenSearch  # type: ignore[import-untyped]
 
         client = AsyncOpenSearch(
             hosts=[{"host": ES_HOST, "port": OS_PORT}],
@@ -343,7 +357,7 @@ def nested_document_class():
     Keyword = universal_dsl.Keyword
     Nested = universal_dsl.Nested
 
-    class Author(InnerDoc):
+    class Author(InnerDoc):  # type: ignore[misc]
         """Nested author information."""
 
         name = Text()
@@ -364,7 +378,7 @@ def nested_document_class():
 
 # Session-scoped cleanup
 @pytest.fixture(scope="session", autouse=True)
-def cleanup_test_indices(elasticsearch_client):
+def cleanup_test_indices():
     """
     Clean up any test indices at the end of the session.
 
@@ -375,14 +389,22 @@ def cleanup_test_indices(elasticsearch_client):
     # Cleanup phase - delete any indices starting with 'test-'
     if is_elasticsearch_available():
         try:
-            indices = elasticsearch_client.cat.indices(format="json")
+            from elasticsearch import Elasticsearch  # type: ignore[import-untyped]
+
+            # Configure client with compatibility mode for elasticsearch-py v9+
+            client = Elasticsearch(
+                [f"http://{ES_HOST}:{ES_PORT}"],
+                headers={"Accept": "application/vnd.elasticsearch+json; compatible-with=8"},
+            )
+            indices = client.cat.indices(format="json")
             for index in indices:
                 index_name = index["index"]
                 if index_name.startswith("test-"):
                     try:
-                        elasticsearch_client.indices.delete(index=index_name)
+                        client.indices.delete(index=index_name)
                         print(f"\nCleaned up test index: {index_name}")
                     except Exception as e:
                         print(f"\nFailed to clean up {index_name}: {e}")
+            client.close()
         except Exception:
             pass

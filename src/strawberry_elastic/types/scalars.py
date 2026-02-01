@@ -12,6 +12,16 @@ from typing import Any, NewType
 import strawberry
 
 
+# Constants for geo point validation
+_GEO_POINT_ARRAY_LENGTH = 2
+_MIN_LATITUDE = -90
+_MAX_LATITUDE = 90
+_MIN_LONGITUDE = -180
+_MAX_LONGITUDE = 180
+_IPV4_PARTS_COUNT = 4
+_MAX_IPV4_OCTET = 255
+
+
 @strawberry.scalar(
     serialize=lambda v: _serialize_geo_point(v),
     parse_value=lambda v: _parse_geo_point(v),
@@ -56,15 +66,14 @@ def _serialize_geo_point(value: Any) -> dict[str, float] | None:
             return {"lat": float(value["latitude"]), "lon": float(value["longitude"])}
 
     # Array format [lon, lat] (GeoJSON convention)
-    if isinstance(value, (list, tuple)) and len(value) == 2:
+    if isinstance(value, list | tuple) and len(value) == _GEO_POINT_ARRAY_LENGTH:
         return {"lat": float(value[1]), "lon": float(value[0])}
 
     # String format "lat,lon"
-    if isinstance(value, str):
-        if "," in value:
-            parts = value.split(",")
-            if len(parts) == 2:
-                return {"lat": float(parts[0].strip()), "lon": float(parts[1].strip())}
+    if isinstance(value, str) and "," in value:
+        parts = value.split(",")
+        if len(parts) == _GEO_POINT_ARRAY_LENGTH:
+            return {"lat": float(parts[0].strip()), "lon": float(parts[1].strip())}
 
     # Return as-is if we can't parse it
     return value
@@ -84,7 +93,7 @@ def _parse_geo_point(value: Any) -> dict[str, float]:
         ValueError: If the input format is invalid
     """
     if not isinstance(value, dict):
-        raise ValueError(
+        raise TypeError(
             f"GeoPoint must be an object with lat and lon fields, got {type(value).__name__}"
         )
 
@@ -95,13 +104,15 @@ def _parse_geo_point(value: Any) -> dict[str, float]:
         lat = float(value["lat"])
         lon = float(value["lon"])
     except (ValueError, TypeError) as e:
-        raise ValueError(f"GeoPoint lat and lon must be numeric: {e}")
+        raise ValueError(f"GeoPoint lat and lon must be numeric: {e}") from e
 
     # Validate ranges
-    if not -90 <= lat <= 90:
-        raise ValueError(f"Latitude must be between -90 and 90, got {lat}")
-    if not -180 <= lon <= 180:
-        raise ValueError(f"Longitude must be between -180 and 180, got {lon}")
+    if not _MIN_LATITUDE <= lat <= _MAX_LATITUDE:
+        raise ValueError(f"Latitude must be between {_MIN_LATITUDE} and {_MAX_LATITUDE}, got {lat}")
+    if not _MIN_LONGITUDE <= lon <= _MAX_LONGITUDE:
+        raise ValueError(
+            f"Longitude must be between {_MIN_LONGITUDE} and {_MAX_LONGITUDE}, got {lon}"
+        )
 
     return {"lat": lat, "lon": lon}
 
@@ -154,7 +165,7 @@ def _parse_ip_address(value: Any) -> str:
         ValueError: If the IP address format is invalid
     """
     if not isinstance(value, str):
-        raise ValueError(f"IP address must be a string, got {type(value).__name__}")
+        raise TypeError(f"IP address must be a string, got {type(value).__name__}")
 
     # Basic validation - check if it looks like an IP address
     # For more thorough validation, could use ipaddress module
@@ -168,15 +179,12 @@ def _parse_ip_address(value: Any) -> str:
     if "." in value:
         # IPv4-like
         parts = value.split(".")
-        if len(parts) != 4:
+        if len(parts) != _IPV4_PARTS_COUNT:
             raise ValueError(f"Invalid IPv4 address format: {value}")
         try:
-            for part in parts:
-                num = int(part)
-                if not 0 <= num <= 255:
-                    raise ValueError(f"Invalid IPv4 octet: {part}")
-        except ValueError:
-            raise ValueError(f"Invalid IPv4 address: {value}")
+            _validate_ipv4_parts(parts)
+        except ValueError as e:
+            raise ValueError(f"Invalid IPv4 address: {value}") from e
     elif ":" in value:
         # IPv6-like - just check it has colons
         # Full IPv6 validation is complex, leave it to Elasticsearch
@@ -185,6 +193,14 @@ def _parse_ip_address(value: Any) -> str:
         raise ValueError(f"Invalid IP address format: {value}")
 
     return value
+
+
+def _validate_ipv4_parts(parts: list[str]) -> None:
+    """Validate IPv4 address parts."""
+    for part in parts:
+        num = int(part)
+        if not 0 <= num <= _MAX_IPV4_OCTET:
+            raise ValueError(f"Invalid IPv4 octet: {part}")
 
 
 # Type aliases for fields that don't need custom scalars but benefit from semantic naming

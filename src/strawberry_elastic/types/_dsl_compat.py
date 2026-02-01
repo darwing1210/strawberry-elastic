@@ -51,7 +51,7 @@ class UniversalDSL:
         if self._info.available and self.is_opensearch:
             self._field_module = self._load_opensearch_fields()
 
-    def _detect_backend(self) -> DSLInfo:
+    def _detect_backend(self) -> DSLInfo:  # noqa: PLR0911, PLR0912
         """
         Detect which DSL backend is available.
 
@@ -67,7 +67,7 @@ class UniversalDSL:
         if forced_backend:
             if forced_backend in ("elasticsearch", "elasticsearch.dsl"):
                 try:
-                    from elasticsearch import dsl
+                    from elasticsearch import dsl  # type: ignore[import-untyped]
 
                     if hasattr(dsl, "Document"):
                         return DSLInfo(
@@ -80,7 +80,7 @@ class UniversalDSL:
 
             elif forced_backend == "elasticsearch_dsl":
                 try:
-                    import elasticsearch_dsl as dsl
+                    import elasticsearch_dsl as dsl  # type: ignore[import-untyped]
 
                     if hasattr(dsl, "Document"):
                         return DSLInfo(
@@ -93,7 +93,7 @@ class UniversalDSL:
 
             elif forced_backend in ("opensearch", "opensearchpy"):
                 try:
-                    from opensearchpy.helpers import document
+                    from opensearchpy.helpers import document  # type: ignore[import-untyped]
 
                     if hasattr(document, "Document"):
                         return DSLInfo(
@@ -106,7 +106,7 @@ class UniversalDSL:
 
         # Auto-detect: Try Elasticsearch 8.18+ (built-in DSL)
         try:
-            from elasticsearch import dsl
+            from elasticsearch import dsl  # type: ignore[import-untyped]
 
             # Verify it has Document class
             if hasattr(dsl, "Document"):
@@ -120,7 +120,7 @@ class UniversalDSL:
 
         # Try Elasticsearch 7.x-8.17.x (separate package)
         try:
-            import elasticsearch_dsl as dsl
+            import elasticsearch_dsl as dsl  # type: ignore[import-untyped]
 
             if hasattr(dsl, "Document"):
                 return DSLInfo(
@@ -133,7 +133,7 @@ class UniversalDSL:
 
         # Try OpenSearch
         try:
-            from opensearchpy.helpers import document
+            from opensearchpy.helpers import document  # type: ignore[import-untyped]
 
             if hasattr(document, "Document"):
                 return DSLInfo(
@@ -150,11 +150,11 @@ class UniversalDSL:
     def _load_opensearch_fields(self) -> Any | None:
         """Load OpenSearch field module if available."""
         try:
-            from opensearchpy.helpers import field
-
-            return field
+            from opensearchpy.helpers import field  # type: ignore[import-untyped]
         except ImportError:
             return None
+        else:
+            return field
 
     @property
     def available(self) -> bool:
@@ -239,7 +239,8 @@ class UniversalDSL:
             ImportError: If no DSL backend is available
         """
         self.ensure_available()
-        assert self._info.module is not None
+        if self._info.module is None:
+            raise RuntimeError("DSL module is not available after ensure_available() call")
         return self._info.module.Document
 
     def get_inner_doc_class(self) -> type:
@@ -262,7 +263,8 @@ class UniversalDSL:
             if hasattr(self._info.module, "InnerObject"):
                 return self._info.module.InnerObject
 
-        assert self._info.module is not None
+        if self._info.module is None:
+            raise RuntimeError("DSL module is not available after ensure_available() call")
         return self._info.module.InnerDoc
 
     def normalize_field(self, field: Any) -> Any:

@@ -1,6 +1,7 @@
 # Contributing to Strawberry Elastic
 
-Thank you for your interest in contributing to Strawberry Elastic! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to Strawberry Elastic! This document provides guidelines and
+instructions for contributing.
 
 ## Table of Contents
 
@@ -49,7 +50,7 @@ uv pip install elasticsearch-dsl opensearch-py httpx
 
 ### Project Structure
 
-```
+```text
 strawberry-elastic/
 ├── src/strawberry_elastic/    # Source code
 │   ├── clients/                # Adapter implementations
@@ -89,7 +90,8 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 - `chore:` - Maintenance tasks
 
 Examples:
-```
+
+```text
 feat: add @elastic.type decorator for Document classes
 fix: handle elasticsearch-dsl 8.18 private attributes
 docs: update README with installation instructions
@@ -112,11 +114,46 @@ uv run ruff check --fix src/ tests/
 ```
 
 **Style Guidelines:**
+
 - Follow PEP 8
 - Use type hints for all functions and methods
 - Maximum line length: 100 characters
 - Use docstrings for all public APIs (Google style)
 - Import order: standard library, third-party, local
+
+### Pre-commit Hooks
+
+We use pre-commit hooks to automatically check code quality before commits:
+
+```bash
+# Install pre-commit hooks (one-time setup)
+uv run pre-commit install
+
+# Run all hooks manually
+uv run pre-commit run --all-files
+
+# Run hooks on staged files only
+uv run pre-commit run
+
+# Update hooks to latest versions
+uv run pre-commit autoupdate
+```
+
+**Hooks included:**
+
+- **Ruff**: Linting and formatting
+- **ty**: Type checking
+- **Bandit**: Security scanning
+- **detect-secrets**: Prevent committing secrets
+- **Markdown linting**: Documentation formatting
+- **YAML/JSON validation**: Config file checks
+
+**Important:** All hooks must pass before your code can be committed. If you need to bypass hooks temporarily
+(not recommended), use:
+
+```bash
+git commit --no-verify
+```
 
 ## Testing
 
@@ -161,10 +198,10 @@ from strawberry_elastic import create_adapter
 def test_create_adapter_with_elasticsearch_client():
     """Test that create_adapter detects Elasticsearch client."""
     from elasticsearch import Elasticsearch
-    
+
     client = Elasticsearch(["http://localhost:9200"])
     adapter = create_adapter(client)
-    
+
     assert adapter is not None
     assert adapter.__class__.__name__ == "ElasticsearchAdapter"
 ```
@@ -191,6 +228,7 @@ uv run ty check --verbose
 ```
 
 **Type Checking Requirements:**
+
 - All functions/methods must have type hints
 - Use `typing` module for complex types
 - Avoid `Any` when possible
@@ -247,12 +285,14 @@ Before committing:
 ### Before Submitting
 
 1. **Update from main:**
+
    ```bash
    git fetch upstream
    git rebase upstream/main
    ```
 
 2. **Run full test suite:**
+
    ```bash
    ./scripts/test-integration.sh all
    ```
@@ -415,6 +455,7 @@ git push origin fix/field-mapper-optional-bug
 ## Recognition
 
 Contributors will be:
+
 - Listed in CONTRIBUTORS.md
 - Mentioned in release notes
 - Given credit in documentation

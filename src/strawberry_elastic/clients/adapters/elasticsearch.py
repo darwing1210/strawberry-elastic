@@ -19,8 +19,10 @@ class ElasticsearchAdapter(BaseElasticAdapter):
     def _validate_client(self) -> None:
         """Validate that the client is an Elasticsearch client."""
         client_module = self.client.__class__.__module__
+        client_class = self.client.__class__.__name__
 
-        if "elasticsearch" not in client_module:
+        # Check module name first, then class name as fallback
+        if "elasticsearch" not in client_module and "elasticsearch" not in client_class.lower():
             raise TypeError(
                 f"Expected Elasticsearch client, got {type(self.client)}. "
                 "Install with: pip install elasticsearch"

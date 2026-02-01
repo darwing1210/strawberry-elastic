@@ -6,7 +6,10 @@ import pytest
 
 from strawberry_elastic.clients.adapters.elasticsearch import ElasticsearchAdapter
 from strawberry_elastic.clients.adapters.opensearch import OpenSearchAdapter
-from strawberry_elastic.clients.factory import create_adapter, get_adapter_for_client_type
+from strawberry_elastic.clients.factory import (
+    create_adapter,
+    get_adapter_for_client_type,
+)
 
 
 class TestCreateAdapter:
@@ -127,7 +130,7 @@ class TestCreateAdapter:
         mock_client.__class__.__module__ = "custom.database"
         mock_client.__class__.__name__ = "CustomClient"
 
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="Unknown client type") as exc_info:
             create_adapter(mock_client)
 
         error_message = str(exc_info.value)
@@ -166,7 +169,7 @@ class TestGetAdapterForClientType:
 
     def test_get_adapter_error_message_helpful(self):
         """Test that error message lists supported types."""
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="Unknown client type") as exc_info:
             get_adapter_for_client_type("mongodb")
 
         error_message = str(exc_info.value)

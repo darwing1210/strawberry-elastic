@@ -7,8 +7,8 @@ Tests the ability to map field types from:
 - To Python types for GraphQL
 """
 
-from datetime import date, datetime
-from typing import get_args, get_origin
+from datetime import datetime
+from typing import get_args
 
 import pytest
 
@@ -165,13 +165,13 @@ class TestRequiredOptionalFields:
         field_type = mapper.map_field("title", {"type": "text"}, required=True)
 
         # Should be str (not optional)
-        assert field_type == str
+        assert field_type is str
 
     def test_required_integer_field(self):
         """Test required integer field."""
         mapper = FieldMapper()
         field_type = mapper.map_field("count", {"type": "integer"}, required=True)
-        assert field_type == int
+        assert field_type is int
 
 
 class TestObjectNestedFields:
@@ -289,7 +289,7 @@ class TestDocumentFieldOptions:
         field_type = mapper.map_document_field(field)
 
         # Should not be optional
-        assert field_type == str
+        assert field_type is str
 
     def test_optional_document_field(self):
         """Test optional Document field."""

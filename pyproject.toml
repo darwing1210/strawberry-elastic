@@ -36,7 +36,7 @@ dev = [
     "pytest-asyncio>=0.21",
     "pytest-cov>=4.0",
     "black>=23.0",
-    "ruff>=0.1",
+    "ruff>=0.14.14",
     "pre-commit>=3.0",
     "ty",
 ]
@@ -158,6 +158,10 @@ ignore = [
     "ANN",     # No need for type annotations in tests
     "PLR2004", # Magic value used in comparison
     "S101",    # Use of assert detected
+    "PLC0415", # Import outside top-level (needed for optional dependencies)
+    "N806",    # Variable name should be lowercase (DSL classes are intentionally capitalized)
+    "TRY300",  # Consider moving statement to else block
+    "SIM105",  # Use contextlib.suppress
 ]
 "examples/**/*.py" = [
     "ANN",     # No need for type annotations in examples
@@ -182,3 +186,13 @@ lines-after-imports = 2
 [tool.ruff.lint.flake8-annotations]
 allow-star-arg-any = true
 suppress-none-returning = true
+
+[tool.bandit]
+exclude_dirs = ["tests", "examples"]
+skips = ["B101"]  # Allow assert in tests (handled by per-file rules)
+
+[tool.pydocstyle]
+convention = "google"
+add-ignore = ["D100", "D104", "D105", "D107", "D202", "D212"]
+match = "(?!test_).*\\.py"
+match-dir = "^(?!tests|examples|__pycache__|\\.).*"

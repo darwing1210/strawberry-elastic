@@ -126,7 +126,7 @@ pytest -m integration  # Only integration tests
 
 ## Project Structure
 
-```
+```text
 strawberry-elastic/
 ├── src/strawberry_elastic/
 │   ├── __init__.py              (43 lines)
@@ -155,6 +155,7 @@ strawberry-elastic/
 - ✅ Generic types properly annotated
 
 Example:
+
 ```python
 async def search(
     self,
@@ -253,6 +254,7 @@ python examples/basic_adapter_usage.py
 ### Pre-commit Checklist
 
 Before committing:
+
 ```bash
 # Format code
 black src/
@@ -280,16 +282,18 @@ The adapters use **lazy initialization** for capability detection:
 - Properties return safe defaults before detection completes
 
 **Why lazy?**
+
 - Can't call async methods from `__init__` (sync method)
 - Avoids unnecessary network calls if adapter is created but never used
 - Allows adapter creation to be instant and never fail
 
 **Implementation pattern:**
+
 ```python
 async def _execute(self, method_name: str, *args, **kwargs):
     # Ensure capabilities are detected before first operation
     await self._ensure_capabilities()
-    
+
     method = getattr(self.client, method_name)
     # ... rest of execution
 ```

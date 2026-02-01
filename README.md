@@ -67,11 +67,11 @@ async def main():
     info = await adapter.info()
     print(f"Connected to: {info['cluster_name']}")
     print(f"Version: {adapter.version}")
-    
+
     # Search documents
     query = {"match": {"title": "python"}}
     results = await adapter.search(index="articles", query=query, size=10)
-    
+
     for hit in results["hits"]["hits"]:
         print(f"- {hit['_source']['title']}")
 
@@ -88,10 +88,10 @@ async def main():
     # Create async client
     client = AsyncElasticsearch(["http://localhost:9200"])
     adapter = create_adapter(client)
-    
+
     # Use adapter (native async)
     results = await adapter.search(index="products", query={"match_all": {}})
-    
+
     # Clean up
     await client.close()
 
@@ -284,7 +284,7 @@ print(adapter.version)  # "8.11.0" (now detected)
 
 The library uses an adapter pattern to provide a unified interface across different client versions:
 
-```
+```text
 ┌─────────────────────────────────────┐
 │     Strawberry Elastic Types        │
 │  (GraphQL types, resolvers, etc.)   │
@@ -321,6 +321,7 @@ Instead of creating separate adapters for each version (elasticsearch_v7, elasti
 4. **Provide feature flags** - Expose capability detection for optional features
 
 This approach means:
+
 - ✅ Works with any client version
 - ✅ No version-specific code paths
 - ✅ Easy to maintain
@@ -337,24 +338,64 @@ cd strawberry-elastic
 
 # Install with development dependencies
 pip install -e ".[dev]"
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Pre-commit Hooks
+
+This project uses [pre-commit](https://pre-commit.com/) to automatically run checks before committing code. The hooks include:
+
+- **Ruff**: Linting and formatting Python code
+- **Type checking**: Static type analysis with ty
+- **Bandit**: Security vulnerability scanning
+- **detect-secrets**: Prevent committing secrets
+- **Markdown linting**: Formatting for documentation
+- **General checks**: Trailing whitespace, file endings, YAML/JSON validation
+
+```bash
+# Run all hooks manually on all files
+pre-commit run --all-files
+
+# Run hooks on specific files
+pre-commit run --files src/strawberry_elastic/file.py
+
+# Update hooks to latest versions
+pre-commit autoupdate
+
+# Skip hooks temporarily (not recommended)
+git commit --no-verify
 ```
 
 ### Running Tests
 
 ```bash
-# Run tests with pytest
+# Run all tests
 pytest
 
-# Run with coverage
-pytest --cov=strawberry_elastic
+# Run specific test file
+pytest tests/clients/test_factory.py
 
-# Type checking with ty
-ty check src/
+# Run with coverage
+pytest --cov=strawberry_elastic --cov-report=html
+
+# Run tests with verbose output
+pytest -v
+
+# Type checking
+ty check
+
+# Linting
+ruff check src/ tests/
+
+# Security scan
+bandit -r src/
 ```
 
 ### Project Structure
 
-```
+```text
 strawberry-elastic/
 ├── src/strawberry_elastic/
 │   ├── __init__.py
@@ -379,6 +420,7 @@ strawberry-elastic/
 ## Roadmap
 
 ### Phase 1: Adapter System ✅ (Current)
+
 - [x] Base adapter interface
 - [x] Elasticsearch adapter (version-agnostic)
 - [x] OpenSearch adapter (version-agnostic)
@@ -389,6 +431,7 @@ strawberry-elastic/
 ### Phase 2: Type System (In Progress - Phase 2.1 Complete ✅)
 
 #### Phase 2.1: Core Infrastructure ✅
+
 - [x] Universal DSL compatibility layer (elasticsearch.dsl, elasticsearch_dsl, opensearchpy)
 - [x] Type inspector for detecting field sources
 - [x] Field mapper for ES/OpenSearch → Python type conversion
@@ -398,6 +441,7 @@ strawberry-elastic/
 - [x] 100+ comprehensive tests with real cluster integration
 
 #### Phase 2.2: Document Support (Next)
+
 - [ ] `@elastic.type` decorator
 - [ ] Automatic field generation from Document classes
 - [ ] Field extraction from mappings
@@ -405,19 +449,23 @@ strawberry-elastic/
 - [ ] Index metadata extraction
 
 #### Phase 2.3: Mapping Introspection
+
 - [ ] Runtime mapping fetch
 - [ ] Lazy field generation
 - [ ] Mapping cache
 
 #### Phase 2.4: Type Hints Support
+
 - [ ] Pure type hint processing
 - [ ] Integration with Strawberry's native type handling
 
 #### Phase 2.5: Custom Scalars (Expanded)
+
 - [ ] Date/DateTime handling improvements
 - [ ] Range type support
 
 #### Phase 2.6: Advanced Features
+
 - [ ] Hybrid mode (Document + custom fields)
 - [ ] Field overrides
 - [ ] Custom resolvers with `@elastic.field`
@@ -425,6 +473,7 @@ strawberry-elastic/
 - [ ] Meta fields (score, highlights, etc.)
 
 ### Phase 3: Filtering & Search
+
 - [ ] Filter system (`@elastic.filter`)
 - [ ] Query builder
 - [ ] Full-text search
@@ -433,6 +482,7 @@ strawberry-elastic/
 - [ ] Bool queries
 
 ### Phase 4: Pagination
+
 - [ ] Offset pagination
 - [ ] search_after pagination
 - [ ] Point in Time (PIT)
@@ -440,12 +490,14 @@ strawberry-elastic/
 - [ ] Cursor encoding
 
 ### Phase 5: Mutations
+
 - [ ] CRUD operations
 - [ ] Bulk operations
 - [ ] Optimistic concurrency
 - [ ] Error handling
 
 ### Phase 6: Advanced Features
+
 - [ ] Aggregations
 - [ ] Suggestions/autocomplete
 - [ ] Highlighting
@@ -479,7 +531,7 @@ All PRs must pass CI checks before merging.
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## Development
+## Development Setup
 
 ### Running Tests
 
@@ -540,6 +592,7 @@ See [scripts/README.md](scripts/README.md) for detailed testing documentation.
 ### Test Results
 
 **Phase 2.1 Status**:
+
 - ✅ **200/206 tests passing** (100/103 per backend)
 - ✅ Full integration with **both** backends:
   - Elasticsearch DSL (elasticsearch-dsl 8.18.0+)
@@ -558,9 +611,11 @@ MIT License - see [LICENSE](LICENSE) for details.
 ## Credits
 
 Inspired by:
+
 - [strawberry-graphql-django](https://github.com/strawberry-graphql/strawberry-graphql-django)
 - [strawberry-sqlalchemy](https://github.com/strawberry-graphql/strawberry-sqlalchemy)
 
 ---
 
-**Note**: This library is under active development. The adapter system is complete and ready to use, but higher-level GraphQL features are still being implemented. Check the roadmap for progress.
+**Note**: This library is under active development. The adapter system is complete and ready to use, but
+higher-level GraphQL features are still being implemented. Check the roadmap for progress.

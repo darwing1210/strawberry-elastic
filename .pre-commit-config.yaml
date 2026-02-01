@@ -1,0 +1,100 @@
+# Pre-commit hooks configuration
+# See https://pre-commit.com for more information
+
+repos:
+  # General file checks
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+  - id: trailing-whitespace
+    exclude: ^tests/.*snapshots/
+  - id: end-of-file-fixer
+    exclude: ^tests/.*snapshots/
+  - id: check-yaml
+  - id: check-toml
+  - id: check-json
+  - id: check-added-large-files
+    args: [--maxkb=500]
+  - id: check-merge-conflict
+  - id: check-case-conflict
+  - id: mixed-line-ending
+    args: [--fix=lf]
+  - id: detect-private-key
+
+  # Python code formatting with ruff
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.9.9
+  hooks:
+  - id: ruff
+    args: [--fix]
+  - id: ruff-format
+
+  # UV lock file management
+- repo: https://github.com/astral-sh/uv-pre-commit
+  rev: 0.9.1
+  hooks:
+  - id: uv-lock
+
+  # Type checking with ty
+- repo: local
+  hooks:
+  - id: ty-check
+    name: ty (type checker)
+    entry: uv run ty check
+    language: system
+    types: [python]
+    pass_filenames: false
+    always_run: true
+    exclude: ^(examples/.*\.py|src/strawberry_elastic/types/_dsl_compat\.py)$
+
+  # Security scanning with bandit
+- repo: https://github.com/PyCQA/bandit
+  rev: 1.9.3
+  hooks:
+  - id: bandit
+    args: [-r, src/, --configfile, pyproject.toml]
+    pass_filenames: false
+
+  # Check for common security issues
+- repo: https://github.com/Yelp/detect-secrets
+  rev: v1.5.0
+  hooks:
+  - id: detect-secrets
+    args: [--baseline, .secrets.baseline]
+    exclude: ^(poetry\.lock|package-lock\.json|\.secrets\.baseline)$
+
+  # Markdown linting
+- repo: https://github.com/igorshubovych/markdownlint-cli
+  rev: v0.43.0
+  hooks:
+  - id: markdownlint
+    args: [--fix]
+
+  # YAML formatting
+- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  rev: v2.15.0
+  hooks:
+  - id: pretty-format-yaml
+    args: [--autofix, --indent, '2']
+
+  # Check Python docstrings
+- repo: https://github.com/PyCQA/pydocstyle
+  rev: 6.3.0
+  hooks:
+  - id: pydocstyle
+    additional_dependencies: [tomli]
+    args: [--config=pyproject.toml]
+    exclude: ^(tests/|examples/)
+
+# Configuration for pre-commit.ci (if using the service)
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [ty-check] # Skip ty-check on pre-commit.ci as it needs local environment
+  submodules: false

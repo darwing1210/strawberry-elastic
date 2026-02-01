@@ -298,7 +298,7 @@ class TestDocumentCreation:
             Text = universal_dsl.Text
             Nested = universal_dsl.Nested
 
-            class Author(InnerDoc):
+            class Author(InnerDoc):  # type: ignore[misc]
                 name = Text()
 
             class Article(Document):

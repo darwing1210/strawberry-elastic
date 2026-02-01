@@ -8,7 +8,7 @@ Maps field type definitions from:
 """
 
 from datetime import datetime
-from typing import Any, get_args, get_origin
+from typing import Any, ClassVar, get_args, get_origin
 
 from ._dsl_compat import ensure_dsl, has_dsl, universal_dsl
 from .scalars import Completion, GeoPoint, GeoShape, IPAddress, TokenCount
@@ -30,7 +30,7 @@ class FieldMapper:
 
     # Elasticsearch/OpenSearch field type → Python type mapping
     # Works for both backends as they share the same type system
-    ES_TO_PYTHON: dict[str, Any] = {
+    ES_TO_PYTHON: ClassVar[dict[str, Any]] = {
         # Text fields
         "text": str,
         "keyword": str,
@@ -86,7 +86,7 @@ class FieldMapper:
 
     def map_field(
         self,
-        field_name: str,
+        field_name: str,  # noqa: ARG002
         field_def: dict[str, Any],
         required: bool = False,
     ) -> type:

@@ -7,6 +7,7 @@ This directory contains CI/CD workflows for Strawberry Elastic.
 ### 1. CI Workflow (`ci.yml`)
 
 **Triggers:**
+
 - Push to `main` or `develop` branches
 - Pull requests to `main` or `develop`
 - Manual workflow dispatch
@@ -14,39 +15,46 @@ This directory contains CI/CD workflows for Strawberry Elastic.
 **Jobs:**
 
 #### Lint & Format Check
+
 - Runs Ruff linter and formatter
 - Checks code style compliance
 - Fast feedback (~30s)
 
 #### Type Check
+
 - Runs ty static type analysis
 - Ensures type safety across the codebase
 - Catches type errors before runtime
 
 #### Unit Tests
+
 - Tests Python 3.11 and 3.12
 - No external dependencies required
 - Tests adapter layer functionality
 - Uploads coverage to Codecov
 
 #### Integration Tests (Elasticsearch)
+
 - Runs with real Elasticsearch 8.x cluster
 - Tests Document support with elasticsearch-dsl
 - Tests type system with ES backend
 - Full integration validation
 
 #### Integration Tests (OpenSearch)
+
 - Runs with real OpenSearch 2.x cluster
 - Tests Document support with opensearchpy
 - Tests type system with OS backend
 - Validates universal DSL compatibility
 
 #### Adapter Tests
+
 - Tests against multiple ES versions (7.x, 8.x)
 - Validates version-agnostic adapter design
 - Ensures backwards compatibility
 
 #### Test Summary
+
 - Aggregates all test results
 - Creates summary report
 - Fails if any job fails
@@ -58,6 +66,7 @@ This directory contains CI/CD workflows for Strawberry Elastic.
 ### 2. Security Workflow (`security.yml`)
 
 **Triggers:**
+
 - Push to `main` or `develop` branches
 - Pull requests to `main` or `develop`
 - Weekly schedule (Monday 00:00 UTC)
@@ -66,26 +75,31 @@ This directory contains CI/CD workflows for Strawberry Elastic.
 **Jobs:**
 
 #### Security Scan (Bandit)
+
 - Scans for common security issues
 - Checks for hardcoded secrets
 - Validates secure coding patterns
 
 #### Dependency Audit
+
 - Runs pip-audit to find vulnerable dependencies
 - Checks against CVE databases
 - Reports known security issues
 
 #### CodeQL Analysis
+
 - Advanced semantic code analysis
 - Detects security vulnerabilities
 - Finds code quality issues
 
 #### License Check
+
 - Verifies dependency licenses
 - Ensures compliance with MIT license
 - Flags incompatible licenses
 
 #### Dependency Review
+
 - Checks for outdated dependencies
 - Reviews new dependencies in PRs
 - Suggests updates
@@ -294,6 +308,7 @@ uv run pytest tests/ -v
 ### Caching
 
 Workflows use caching for:
+
 - uv cache directory
 - pip cache
 - ty cache
@@ -301,6 +316,7 @@ Workflows use caching for:
 ### Parallelization
 
 Jobs run in parallel:
+
 - Lint and type-check run independently
 - Unit tests run across Python versions
 - Integration tests run for each backend

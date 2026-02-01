@@ -10,12 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 #### Simplified Dependencies
+
 - **Single extras per client type** - No more version-specific extras
   - `[elasticsearch]` - Supports Elasticsearch 7.x and 8.x
   - `[opensearch]` - Supports OpenSearch 1.x and 2.x
   - Removes conflicting extras that made `uv run` fail
 
 #### Adapter System
+
 - **Version-agnostic adapters** for Elasticsearch and OpenSearch
   - `ElasticsearchAdapter` - Works with ES 7.x and 8.x
   - `OpenSearchAdapter` - Works with OpenSearch 1.x and 2.x
@@ -28,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sync and async client support** - Sync clients automatically wrapped with `asyncio.run_in_executor`
 
 #### Core Operations
+
 - Search operations with full query DSL support
 - CRUD operations (index, get, update, delete)
 - Bulk operations
@@ -37,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Count operations
 
 #### Developer Tools
+
 - Full type annotations with modern Python 3.12+ syntax
 - Type checking with `ty` (100% coverage)
 - Linting with `ruff` (all checks passing)
@@ -45,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pre-commit hooks configuration
 
 #### Documentation
+
 - Complete README with usage examples
 - Development guide (DEVELOPMENT.md)
 - Inline docstrings for all public APIs
@@ -52,6 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Architecture diagrams and design decisions
 
 #### Exception System
+
 - Custom exception hierarchy
 - Specific exceptions for common errors:
   - `DocumentNotFoundError`
@@ -119,14 +125,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Dependencies
 
 #### Required
+
 - `strawberry-graphql>=0.200`
 - `typing-extensions>=4.0`
 
 #### Optional (User Choice)
+
 - `elasticsearch>=7.0` (for Elasticsearch 7.x and 8.x)
 - `opensearch-py>=1.0` (for OpenSearch 1.x and 2.x)
 
 #### Development
+
 - `pytest>=7.0`
 - `pytest-asyncio>=0.21`
 - `pytest-cov>=4.0`
@@ -160,18 +169,21 @@ See README.md for the complete roadmap. Next phases:
 This changelog documents the development of Phase 1 (Adapter System):
 
 ### Session 1: Initial Implementation
+
 - Created base adapter interface
 - Implemented Elasticsearch adapter
 - Implemented OpenSearch adapter
 - Created auto-detection factory
 
 ### Session 2: Type Checking & Fixes
+
 - Added `ty` for type checking
 - Fixed async initialization bug (lazy detection)
 - Updated to modern type syntax
 - Fixed all type errors (0 errors)
 
 ### Session 3: Quality & Testing
+
 - Replaced print with logging
 - Added comprehensive test suite
 - Verified lazy initialization with tests

@@ -8,62 +8,62 @@ on:
   workflow_dispatch:
 
 env:
-  PYTHON_VERSION: "3.12"
-  UV_VERSION: "0.5.11"
+  PYTHON_VERSION: '3.12'
+  UV_VERSION: 0.5.11
 
 jobs:
   lint:
     name: Lint & Format Check
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+    - name: Check out code
+      uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          version: ${{ env.UV_VERSION }}
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: ${{ env.UV_VERSION }}
 
-      - name: Install dependencies
-        run: |
-          uv venv
-          uv pip install ruff
+    - name: Install dependencies
+      run: |
+        uv venv
+        uv pip install ruff
 
-      - name: Run ruff linter
-        run: uv run ruff check src/ tests/
+    - name: Run ruff linter
+      run: uv run ruff check src/ tests/
 
-      - name: Run ruff formatter
-        run: uv run ruff format --check src/ tests/
+    - name: Run ruff formatter
+      run: uv run ruff format --check src/ tests/
 
   type-check:
     name: Type Check (ty)
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+    - name: Check out code
+      uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          version: ${{ env.UV_VERSION }}
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: ${{ env.UV_VERSION }}
 
-      - name: Install dependencies
-        run: |
-          uv venv
-          uv pip install -e ".[dev]"
+    - name: Install dependencies
+      run: |
+        uv venv
+        uv pip install -e ".[dev]"
 
-      - name: Run ty
-        run: uv run ty check
+    - name: Run ty
+      run: uv run ty check
 
   unit-tests:
     name: Unit Tests (Python ${{ matrix.python-version }})
@@ -71,35 +71,35 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ['3.11', '3.12']
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+    - name: Check out code
+      uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          version: ${{ env.UV_VERSION }}
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: ${{ env.UV_VERSION }}
 
-      - name: Install dependencies
-        run: |
-          uv venv
-          uv pip install -e ".[dev]"
+    - name: Install dependencies
+      run: |
+        uv venv
+        uv pip install -e ".[dev]"
 
-      - name: Run unit tests (no DSL)
-        run: uv run pytest tests/clients/ -v --cov=strawberry_elastic/clients --cov-report=xml
+    - name: Run unit tests (no DSL)
+      run: uv run pytest tests/clients/ -v --cov=strawberry_elastic/clients --cov-report=xml
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.xml
-          flags: unit-tests
-          name: unit-${{ matrix.python-version }}
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unit-tests
+        name: unit-${{ matrix.python-version }}
 
   integration-tests-elasticsearch:
     name: Integration Tests (Elasticsearch)
@@ -112,7 +112,7 @@ jobs:
           xpack.security.enabled: false
           ES_JAVA_OPTS: -Xms512m -Xmx512m
         ports:
-          - 9200:9200
+        - 9200:9200
         options: >-
           --health-cmd "curl -f http://localhost:9200/_cluster/health || exit 1"
           --health-interval 10s
@@ -121,46 +121,46 @@ jobs:
           --health-start-period 30s
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+    - name: Check out code
+      uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          version: ${{ env.UV_VERSION }}
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: ${{ env.UV_VERSION }}
 
-      - name: Install dependencies
-        run: |
-          uv venv
-          uv pip install -e ".[dev]"
-          uv pip install elasticsearch-dsl httpx
+    - name: Install dependencies
+      run: |
+        uv venv
+        uv pip install -e ".[dev]"
+        uv pip install elasticsearch-dsl httpx
 
-      - name: Wait for Elasticsearch
-        run: |
-          timeout 60 bash -c 'until curl -f http://localhost:9200/_cluster/health; do sleep 2; done'
+    - name: Wait for Elasticsearch
+      run: |
+        timeout 60 bash -c 'until curl -f http://localhost:9200/_cluster/health; do sleep 2; done'
 
-      - name: Verify Elasticsearch connection
-        run: |
-          curl http://localhost:9200
-          curl http://localhost:9200/_cluster/health
+    - name: Verify Elasticsearch connection
+      run: |
+        curl http://localhost:9200
+        curl http://localhost:9200/_cluster/health
 
-      - name: Run integration tests (Elasticsearch backend)
-        run: uv run pytest tests/types/ -v --cov=strawberry_elastic/types --cov-report=xml
-        env:
-          ES_HOST: localhost
-          ES_PORT: 9200
+    - name: Run integration tests (Elasticsearch backend)
+      run: uv run pytest tests/types/ -v --cov=strawberry_elastic/types --cov-report=xml
+      env:
+        ES_HOST: localhost
+        ES_PORT: 9200
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.xml
-          flags: integration-elasticsearch
-          name: integration-es
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: integration-elasticsearch
+        name: integration-es
 
   integration-tests-opensearch:
     name: Integration Tests (OpenSearch)
@@ -174,7 +174,7 @@ jobs:
           DISABLE_SECURITY_PLUGIN: true
           OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
         ports:
-          - 9200:9200
+        - 9200:9200
         options: >-
           --health-cmd "curl -f http://localhost:9200/_cluster/health || exit 1"
           --health-interval 10s
@@ -183,47 +183,47 @@ jobs:
           --health-start-period 30s
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+    - name: Check out code
+      uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          version: ${{ env.UV_VERSION }}
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: ${{ env.UV_VERSION }}
 
-      - name: Install dependencies
-        run: |
-          uv venv
-          uv pip install -e ".[dev]"
-          uv pip install opensearch-py httpx
+    - name: Install dependencies
+      run: |
+        uv venv
+        uv pip install -e ".[dev]"
+        uv pip install opensearch-py httpx
 
-      - name: Wait for OpenSearch
-        run: |
-          timeout 60 bash -c 'until curl -f http://localhost:9200/_cluster/health; do sleep 2; done'
+    - name: Wait for OpenSearch
+      run: |
+        timeout 60 bash -c 'until curl -f http://localhost:9200/_cluster/health; do sleep 2; done'
 
-      - name: Verify OpenSearch connection
-        run: |
-          curl http://localhost:9200
-          curl http://localhost:9200/_cluster/health
+    - name: Verify OpenSearch connection
+      run: |
+        curl http://localhost:9200
+        curl http://localhost:9200/_cluster/health
 
-      - name: Run integration tests (OpenSearch backend)
-        run: uv run pytest tests/types/ -v --cov=strawberry_elastic/types --cov-report=xml
-        env:
-          ES_HOST: localhost
-          ES_PORT: 9200
-          STRAWBERRY_ELASTIC_DSL: opensearch
+    - name: Run integration tests (OpenSearch backend)
+      run: uv run pytest tests/types/ -v --cov=strawberry_elastic/types --cov-report=xml
+      env:
+        ES_HOST: localhost
+        ES_PORT: 9200
+        STRAWBERRY_ELASTIC_DSL: opensearch
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.xml
-          flags: integration-opensearch
-          name: integration-os
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: integration-opensearch
+        name: integration-os
 
   adapter-tests:
     name: Adapter Tests (ES ${{ matrix.es-version }})
@@ -232,8 +232,8 @@ jobs:
       fail-fast: false
       matrix:
         es-version:
-          - "8.11.0"
-          - "7.17.15"
+        - 8.11.0
+        - 7.17.15
     services:
       elasticsearch:
         image: docker.elastic.co/elasticsearch/elasticsearch:${{ matrix.es-version }}
@@ -242,7 +242,7 @@ jobs:
           xpack.security.enabled: false
           ES_JAVA_OPTS: -Xms512m -Xmx512m
         ports:
-          - 9200:9200
+        - 9200:9200
         options: >-
           --health-cmd "curl -f http://localhost:9200/_cluster/health || exit 1"
           --health-interval 10s
@@ -251,77 +251,77 @@ jobs:
           --health-start-period 30s
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+    - name: Check out code
+      uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          version: ${{ env.UV_VERSION }}
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: ${{ env.UV_VERSION }}
 
-      - name: Install dependencies
-        run: |
-          uv venv
-          uv pip install -e ".[dev]"
-          uv pip install elasticsearch httpx
+    - name: Install dependencies
+      run: |
+        uv venv
+        uv pip install -e ".[dev]"
+        uv pip install elasticsearch httpx
 
-      - name: Wait for Elasticsearch
-        run: |
-          timeout 60 bash -c 'until curl -f http://localhost:9200/_cluster/health; do sleep 2; done'
+    - name: Wait for Elasticsearch
+      run: |
+        timeout 60 bash -c 'until curl -f http://localhost:9200/_cluster/health; do sleep 2; done'
 
-      - name: Run adapter tests
-        run: uv run pytest tests/clients/ -v --cov=strawberry_elastic/clients --cov-report=xml
-        env:
-          ES_HOST: localhost
-          ES_PORT: 9200
+    - name: Run adapter tests
+      run: uv run pytest tests/clients/ -v --cov=strawberry_elastic/clients --cov-report=xml
+      env:
+        ES_HOST: localhost
+        ES_PORT: 9200
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.xml
-          flags: adapter-tests
-          name: adapter-es-${{ matrix.es-version }}
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: adapter-tests
+        name: adapter-es-${{ matrix.es-version }}
 
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
     needs:
-      - lint
-      - type-check
-      - unit-tests
-      - integration-tests-elasticsearch
-      - integration-tests-opensearch
-      - adapter-tests
+    - lint
+    - type-check
+    - unit-tests
+    - integration-tests-elasticsearch
+    - integration-tests-opensearch
+    - adapter-tests
     if: always()
     steps:
-      - name: Check test results
-        run: |
-          if [ "${{ needs.lint.result }}" != "success" ] || \
-             [ "${{ needs.type-check.result }}" != "success" ] || \
-             [ "${{ needs.unit-tests.result }}" != "success" ] || \
-             [ "${{ needs.integration-tests-elasticsearch.result }}" != "success" ] || \
-             [ "${{ needs.integration-tests-opensearch.result }}" != "success" ] || \
-             [ "${{ needs.adapter-tests.result }}" != "success" ]; then
-            echo "❌ One or more test jobs failed"
-            exit 1
-          else
-            echo "✅ All tests passed!"
-          fi
+    - name: Check test results
+      run: |
+        if [ "${{ needs.lint.result }}" != "success" ] || \
+           [ "${{ needs.type-check.result }}" != "success" ] || \
+           [ "${{ needs.unit-tests.result }}" != "success" ] || \
+           [ "${{ needs.integration-tests-elasticsearch.result }}" != "success" ] || \
+           [ "${{ needs.integration-tests-opensearch.result }}" != "success" ] || \
+           [ "${{ needs.adapter-tests.result }}" != "success" ]; then
+          echo "❌ One or more test jobs failed"
+          exit 1
+        else
+          echo "✅ All tests passed!"
+        fi
 
-      - name: Test Summary
-        run: |
-          echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Lint | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Type Check | ${{ needs.type-check.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Unit Tests | ${{ needs.unit-tests.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Integration (ES) | ${{ needs.integration-tests-elasticsearch.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Integration (OS) | ${{ needs.integration-tests-opensearch.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Adapter Tests | ${{ needs.adapter-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+    - name: Test Summary
+      run: |
+        echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Lint | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Type Check | ${{ needs.type-check.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Unit Tests | ${{ needs.unit-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Integration (ES) | ${{ needs.integration-tests-elasticsearch.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Integration (OS) | ${{ needs.integration-tests-opensearch.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Adapter Tests | ${{ needs.adapter-tests.result }} |" >> $GITHUB_STEP_SUMMARY

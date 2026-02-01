@@ -7,7 +7,7 @@ Elasticsearch and OpenSearch clients, including sync and async variants.
 
 import asyncio
 import logging
-from typing import Any, Dict
+
 
 # Configure logging
 logging.basicConfig(
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 async def example_elasticsearch_sync():
     """Example using sync Elasticsearch client with auto-detection."""
     try:
-        from elasticsearch import Elasticsearch
+        from elasticsearch import Elasticsearch  # type: ignore[import-untyped]
 
         from strawberry_elastic import create_adapter
 
@@ -62,7 +62,7 @@ async def example_elasticsearch_sync():
 async def example_elasticsearch_async():
     """Example using async Elasticsearch client."""
     try:
-        from elasticsearch import AsyncElasticsearch
+        from elasticsearch import AsyncElasticsearch  # type: ignore[import-untyped]
 
         from strawberry_elastic import create_adapter
 
@@ -98,7 +98,7 @@ async def example_elasticsearch_async():
 async def example_opensearch_sync():
     """Example using sync OpenSearch client."""
     try:
-        from opensearchpy import OpenSearch
+        from opensearchpy import OpenSearch  # type: ignore[import-untyped]
 
         from strawberry_elastic import create_adapter
 
@@ -131,7 +131,7 @@ async def example_opensearch_sync():
 async def example_opensearch_async():
     """Example using async OpenSearch client."""
     try:
-        from opensearchpy import AsyncOpenSearch
+        from opensearchpy import AsyncOpenSearch  # type: ignore[import-untyped]
 
         from strawberry_elastic import create_adapter
 
@@ -164,7 +164,7 @@ async def example_opensearch_async():
 async def example_crud_operations():
     """Example demonstrating CRUD operations with adapter."""
     try:
-        from elasticsearch import Elasticsearch
+        from elasticsearch import Elasticsearch  # type: ignore[import-untyped]
 
         from strawberry_elastic import create_adapter
 
@@ -216,7 +216,7 @@ async def example_crud_operations():
 async def example_bulk_operations():
     """Example demonstrating bulk operations."""
     try:
-        from elasticsearch import Elasticsearch
+        from elasticsearch import Elasticsearch  # type: ignore[import-untyped]
 
         from strawberry_elastic import create_adapter
 
@@ -236,7 +236,7 @@ async def example_bulk_operations():
         # Execute bulk operation
         result = await adapter.bulk(operations=operations, refresh=True)
 
-        logger.info(f"Bulk operation completed")
+        logger.info("Bulk operation completed")
         logger.info(f"Errors: {result.get('errors', False)}")
         logger.info(f"Items processed: {len(result['items'])}")
 
@@ -254,7 +254,7 @@ async def example_bulk_operations():
 async def example_advanced_search():
     """Example demonstrating advanced search features."""
     try:
-        from elasticsearch import Elasticsearch
+        from elasticsearch import Elasticsearch  # type: ignore[import-untyped]
 
         from strawberry_elastic import create_adapter
 
@@ -310,7 +310,7 @@ async def example_advanced_search():
 async def example_mapping_operations():
     """Example demonstrating mapping operations."""
     try:
-        from elasticsearch import Elasticsearch
+        from elasticsearch import Elasticsearch  # type: ignore[import-untyped]
 
         from strawberry_elastic import create_adapter
 
@@ -366,7 +366,7 @@ async def example_mapping_operations():
 async def example_capability_detection():
     """Example showing how to detect and use client capabilities."""
     try:
-        from elasticsearch import Elasticsearch
+        from elasticsearch import Elasticsearch  # type: ignore[import-untyped]
 
         from strawberry_elastic import create_adapter
 
@@ -374,7 +374,7 @@ async def example_capability_detection():
         adapter = create_adapter(client)
 
         # Trigger capability detection with first operation
-        info = await adapter.info()
+        await adapter.info()
 
         # Get all capabilities (now detected)
         capabilities = await adapter.get_capabilities()

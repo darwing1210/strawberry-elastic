@@ -11,7 +11,7 @@ Tests the ability to detect field sources from:
 import pytest
 
 from strawberry_elastic.types._dsl_compat import has_dsl, universal_dsl
-from strawberry_elastic.types.inspector import TypeInfo, TypeInspector, TypeSource
+from strawberry_elastic.types.inspector import TypeInfo, TypeInspector
 
 
 class TestTypeInspector:
@@ -176,7 +176,7 @@ class TestCustomFieldDetection:
         """Test detection of fields with _elastic_field marker."""
         inspector = TypeInspector()
 
-        def custom_method(self):
+        def custom_method(_self):
             return "value"
 
         # Mark as elastic field

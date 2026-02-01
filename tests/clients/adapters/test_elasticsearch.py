@@ -44,10 +44,10 @@ class TestElasticsearchAdapterInit:
     def test_adapter_requires_necessary_methods(self):
         """Test that adapter validates client has required methods."""
         # Create a mock client missing required methods
-        mock_client = Mock()
+        # Use spec_set to prevent Mock from auto-creating attributes
+        mock_client = Mock(spec_set=["search"])
         mock_client.__class__.__module__ = "elasticsearch"
-        mock_client.search = Mock()
-        # Missing other required methods
+        # Missing other required methods (get, index, delete, info)
 
         # Should raise TypeError about missing methods
         with pytest.raises(TypeError, match="missing required methods"):
@@ -312,12 +312,16 @@ class TestElasticsearchOperations:
         adapter = ElasticsearchAdapter(mock_client)
 
         with patch("asyncio.get_event_loop") as mock_loop:
-            mock_loop.return_value.run_in_executor = AsyncMock(
-                side_effect=[
-                    {"version": {"number": "8.0.0"}, "cluster_name": "test"},
-                    {"hits": {"total": {"value": 10}, "hits": []}},
-                ]
-            )
+            # Mock run_in_executor to return the search result directly
+            async def mock_executor(_executor, func):
+                # Call the lambda function to get the result
+                return func()
+
+            mock_loop.return_value.run_in_executor = mock_executor
+
+            # Mock the search method to return expected result
+            mock_client.search.return_value = {"hits": {"total": {"value": 10}, "hits": []}}
+
             result = await adapter.search(index="test", query={"match_all": {}})
 
         assert "hits" in result

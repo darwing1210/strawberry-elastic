@@ -9,15 +9,15 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
     container_name: strawberry-elastic-es
     environment:
-      - node.name=es-node
-      - cluster.name=strawberry-elastic-cluster
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.security.enabled=false
-      - xpack.security.enrollment.enabled=false
-      - xpack.security.http.ssl.enabled=false
-      - xpack.security.transport.ssl.enabled=false
+    - node.name=es-node
+    - cluster.name=strawberry-elastic-cluster
+    - discovery.type=single-node
+    - bootstrap.memory_lock=true
+    - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    - xpack.security.enabled=false
+    - xpack.security.enrollment.enabled=false
+    - xpack.security.http.ssl.enabled=false
+    - xpack.security.transport.ssl.enabled=false
     ulimits:
       memlock:
         soft: -1
@@ -26,11 +26,11 @@ services:
         soft: 65536
         hard: 65536
     ports:
-      - "9200:9200"
+    - 9200:9200
     networks:
-      - elastic
+    - elastic
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      test: [CMD-SHELL, curl -f http://localhost:9200/_cluster/health || exit 1]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -41,12 +41,12 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.15
     container_name: strawberry-elastic-es7
     environment:
-      - node.name=es7-node
-      - cluster.name=strawberry-elastic-cluster-7
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.security.enabled=false
+    - node.name=es7-node
+    - cluster.name=strawberry-elastic-cluster-7
+    - discovery.type=single-node
+    - bootstrap.memory_lock=true
+    - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    - xpack.security.enabled=false
     ulimits:
       memlock:
         soft: -1
@@ -55,11 +55,11 @@ services:
         soft: 65536
         hard: 65536
     ports:
-      - "9201:9200"
+    - 9201:9200
     networks:
-      - elastic
+    - elastic
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      test: [CMD-SHELL, curl -f http://localhost:9200/_cluster/health || exit 1]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -70,13 +70,13 @@ services:
     image: opensearchproject/opensearch:2.11.0
     container_name: strawberry-elastic-os
     environment:
-      - cluster.name=strawberry-elastic-opensearch
-      - node.name=opensearch-node
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "DISABLE_INSTALL_DEMO_CONFIG=true"
-      - "DISABLE_SECURITY_PLUGIN=true"
+    - cluster.name=strawberry-elastic-opensearch
+    - node.name=opensearch-node
+    - discovery.type=single-node
+    - bootstrap.memory_lock=true
+    - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+    - DISABLE_INSTALL_DEMO_CONFIG=true
+    - DISABLE_SECURITY_PLUGIN=true
     ulimits:
       memlock:
         soft: -1
@@ -85,11 +85,11 @@ services:
         soft: 65536
         hard: 65536
     ports:
-      - "9202:9200"
+    - 9202:9200
     networks:
-      - elastic
+    - elastic
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      test: [CMD-SHELL, curl -f http://localhost:9200/_cluster/health || exit 1]
       interval: 10s
       timeout: 5s
       retries: 5

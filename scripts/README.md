@@ -25,8 +25,9 @@ Starts Elasticsearch and OpenSearch containers for testing:
 ```
 
 Services started:
+
 - **Elasticsearch 8.x** on `http://localhost:9200`
-- **Elasticsearch 7.x** on `http://localhost:9201` 
+- **Elasticsearch 7.x** on `http://localhost:9201`
 - **OpenSearch 2.x** on `http://localhost:9202`
 
 #### `down` - Stop Containers
@@ -54,6 +55,7 @@ Installs Document support packages for testing:
 ```
 
 Installs:
+
 - `elasticsearch-dsl` (Elasticsearch Document support)
 - `opensearch-py` (OpenSearch Document support)
 - `httpx` (for health checks)
@@ -77,6 +79,7 @@ Runs both unit and integration tests:
 #### `all` - Complete Test Run
 
 Runs the full test cycle:
+
 1. Starts Docker containers
 2. Installs DSL packages
 3. Runs complete test suite with coverage
@@ -97,6 +100,7 @@ KEEP_RUNNING=true ./scripts/test-integration.sh all
 ```
 
 Useful for:
+
 - Debugging test failures
 - Running multiple test iterations
 - Manual testing with live clusters
@@ -117,6 +121,7 @@ BACKEND=opensearch KEEP_RUNNING=true ./scripts/test-integration.sh test
 ```
 
 Valid values:
+
 - `elasticsearch` (default) - Uses `elasticsearch.dsl` or `elasticsearch_dsl`
 - `opensearch` - Uses `opensearchpy.helpers.document`
 
@@ -127,12 +132,14 @@ This tests that the universal DSL compatibility layer works correctly with both 
 The `docker-compose.yml` defines three services:
 
 #### Elasticsearch 8.x (`elasticsearch`)
+
 - Port: `9200`
 - Image: `docker.elastic.co/elasticsearch/elasticsearch:8.11.0`
 - Security: Disabled for testing
 - Memory: 512MB heap
 
 #### Elasticsearch 7.x (`elasticsearch-7`)
+
 - Port: `9201`
 - Image: `docker.elastic.co/elasticsearch/elasticsearch:7.17.15`
 - Security: Disabled for testing
@@ -140,6 +147,7 @@ The `docker-compose.yml` defines three services:
 - Purpose: Testing legacy version support
 
 #### OpenSearch 2.x (`opensearch`)
+
 - Port: `9202`
 - Image: `opensearchproject/opensearch:2.11.0`
 - Security: Disabled for testing
@@ -181,7 +189,7 @@ Tests use pytest markers to categorize functionality:
 
 - `@pytest.mark.integration` - Requires real cluster
 - `@pytest.mark.elasticsearch` - Elasticsearch-specific
-- `@pytest.mark.opensearch` - OpenSearch-specific  
+- `@pytest.mark.opensearch` - OpenSearch-specific
 - `@pytest.mark.requires_dsl` - Requires Document support
 - `@pytest.mark.unit` - Unit tests (no external dependencies)
 - `@pytest.mark.slow` - Long-running tests
@@ -210,11 +218,13 @@ STRAWBERRY_ELASTIC_DSL=opensearch uv run pytest -m requires_dsl
 #### Containers won't start
 
 Check Docker is running:
+
 ```bash
 docker info
 ```
 
 Check ports aren't in use:
+
 ```bash
 lsof -i :9200
 lsof -i :9201
@@ -248,16 +258,19 @@ environment:
 If tests show as "skipped", check:
 
 1. **Containers running?**
+
    ```bash
    docker-compose ps
    ```
 
 2. **DSL installed?**
+
    ```bash
    uv pip list | grep -E "(elasticsearch-dsl|opensearch-py)"
    ```
 
 3. **Services reachable?**
+
    ```bash
    curl http://localhost:9200
    curl http://localhost:9202
@@ -289,7 +302,7 @@ For GitHub Actions or other CI:
 
 ## Development Workflow
 
-### Typical workflow for DSL feature development:
+### Typical workflow for DSL feature development
 
 ```bash
 # 1. Start services in background
@@ -332,7 +345,7 @@ STRAWBERRY_ELASTIC_DSL=opensearch uv run pytest tests/types/ -v
 ./scripts/test-integration.sh down
 ```
 
-### Quick iteration loop:
+### Quick iteration loop
 
 ```bash
 # Keep services running, just re-run tests
@@ -352,12 +365,14 @@ BACKEND=opensearch KEEP_RUNNING=true ./scripts/test-integration.sh all
 ## Test Results Summary
 
 ### Elasticsearch Backend
+
 - **100/103 tests passing**
 - 3 tests skipped (OpenSearch-specific)
 - Backend: `elasticsearch.dsl` (ES 8.18+)
 - Full Document class support
 
 ### OpenSearch Backend
+
 - **100/103 tests passing**
 - 3 tests skipped (Elasticsearch-specific)
 - Backend: `opensearchpy`

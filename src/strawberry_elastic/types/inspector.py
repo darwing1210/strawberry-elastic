@@ -113,8 +113,8 @@ class TypeInspector:
             return False
 
         try:
-            Document = universal_dsl.get_document_class()
-            return isinstance(cls, type) and issubclass(cls, Document)
+            document = universal_dsl.get_document_class()
+            return isinstance(cls, type) and issubclass(cls, document)
         except (TypeError, AttributeError):
             return False
 

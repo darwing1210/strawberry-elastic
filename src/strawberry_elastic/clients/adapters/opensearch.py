@@ -19,8 +19,10 @@ class OpenSearchAdapter(BaseElasticAdapter):
     def _validate_client(self) -> None:
         """Validate that the client is an OpenSearch client."""
         client_module = self.client.__class__.__module__
+        client_class = self.client.__class__.__name__
 
-        if "opensearch" not in client_module.lower():
+        # Check module name first, then class name as fallback
+        if "opensearch" not in client_module.lower() and "opensearch" not in client_class.lower():
             raise TypeError(
                 f"Expected OpenSearch client, got {type(self.client)}. "
                 "Install with: pip install opensearch-py"

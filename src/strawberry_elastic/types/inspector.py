@@ -9,12 +9,23 @@ Inspects a class to determine whether fields should be generated from:
 """
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import Any, Literal
 
 from ._dsl_compat import has_dsl, universal_dsl
 
 
 TypeSource = Literal["document", "mapping", "hints", "hybrid"]
+
+
+class FieldSource(Enum):
+    """Source of field definitions for a type."""
+
+    DOCUMENT = "document"  # From Document class mapping
+    MAPPING = "mapping"  # From runtime mapping introspection
+    HINTS = "hints"  # From Python type hints
+    HYBRID = "hybrid"  # Combination of sources
+    UNKNOWN = "unknown"  # Not yet determined
 
 
 @dataclass
@@ -35,6 +46,8 @@ class TypeInfo:
     index_name: str | None = None
     has_type_hints: bool = False
     custom_fields: dict[str, Any] | None = None
+    auto_fields: bool = True
+    exclude_fields: list[str] | None = None
 
 
 class TypeInspector:
@@ -62,6 +75,35 @@ class TypeInspector:
         Returns:
             TypeInfo with detected source and metadata
         """
+        # First check if decorated with @elastic.type
+        if hasattr(cls, "_elastic_type"):
+            elastic_meta = cls._elastic_type  # type: ignore[attr-defined]
+            has_hints = self._has_type_hints(cls)
+            custom = self._get_custom_fields(cls)
+
+            document_class = elastic_meta.get("document_class")  # type: ignore[union-attr]
+
+            # Determine source based on what's available
+            source: TypeSource = "document"
+            if document_class and (has_hints or custom):
+                source = "hybrid"
+            elif not document_class and has_hints:
+                source = "hints"
+            elif not document_class and not has_hints:
+                source = "mapping"
+
+            return TypeInfo(
+                source=source,
+                document_class=document_class,
+                index_name=elastic_meta.get("index_name") or self._get_index_name(document_class)  # type: ignore[union-attr]
+                if document_class
+                else None,
+                has_type_hints=has_hints,
+                custom_fields=custom,
+                auto_fields=elastic_meta.get("auto_fields", True),  # type: ignore[union-attr]
+                exclude_fields=elastic_meta.get("exclude_fields", []),  # type: ignore[union-attr]
+            )
+
         # Check if it's a Document class (if DSL available)
         if has_dsl() and self._is_document(cls):
             has_hints = self._has_type_hints(cls)

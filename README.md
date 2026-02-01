@@ -21,7 +21,7 @@ GraphQL integration for Elasticsearch and OpenSearch with Strawberry GraphQL.
 - ✅ **Document Support**: Works with elasticsearch-dsl and opensearchpy Document classes
 - ✅ **Field Mapping**: Automatic mapping of 40+ field types to GraphQL types
 - ✅ **Custom Scalars**: GeoPoint, GeoShape, IPAddress with validation
-- 🚧 **Type Decorator**: @elastic.type decorator (Coming in Phase 2.2)
+- ✅ **Type Decorator**: @elastic.type decorator for automatic field generation
 - 🚧 **Filtering**: Powerful query builder for complex searches (Coming Soon)
 - 🚧 **Pagination**: Multiple strategies (offset, search_after, PIT) (Coming Soon)
 - 🚧 **Mutations**: CRUD operations and bulk indexing (Coming Soon)
@@ -113,6 +113,102 @@ client = OpenSearch(
 
 adapter = create_adapter(client)
 ```
+
+## Type Decorators
+
+### Automatic Field Generation with @elastic.type
+
+The `@elastic.type` decorator enables automatic GraphQL type generation from Elasticsearch/OpenSearch Document classes:
+
+```python
+import strawberry
+from elasticsearch.dsl import Document, Text, Keyword, Integer
+from strawberry_elastic import elastic
+
+# Define your Elasticsearch Document
+class ArticleDocument(Document):
+    title = Text(required=True)
+    author = Keyword()
+    content = Text()
+    views = Integer()
+
+    class Index:
+        name = "articles"
+
+# Automatically generate GraphQL type from Document
+@elastic.type(ArticleDocument)
+class Article:
+    """Fields are auto-generated from ArticleDocument mapping"""
+    pass
+
+# Use with Strawberry
+@strawberry.type
+@elastic.type(ArticleDocument)
+class Article:
+    """Ready to use in GraphQL schema"""
+    pass
+```
+
+### Hybrid Mode: Document + Custom Fields
+
+Combine auto-generated fields with custom computed fields:
+
+```python
+@elastic.type(ArticleDocument)
+class Article:
+    # Fields auto-generated: title, author, content, views
+
+    @elastic.field
+    def summary(self) -> str:
+        """Custom computed field"""
+        return self.content[:100] + "..."
+
+    @elastic.field(description="Display title with view count")
+    def display_name(self) -> str:
+        """Another custom field with description"""
+        return f"{self.title} ({self.views} views)"
+```
+
+### Field Control Options
+
+```python
+# Exclude specific fields
+@elastic.type(ArticleDocument, exclude_fields=["views", "internal_id"])
+class PublicArticle:
+    pass
+
+# Override auto-generated field types
+@elastic.type(ArticleDocument)
+class Article:
+    views: str  # Override int -> str
+    pass
+
+# Custom index name
+@elastic.type(ArticleDocument, index="custom-articles-index")
+class Article:
+    pass
+
+# Disable auto-generation (manual fields only)
+@elastic.type(ArticleDocument, auto_fields=False)
+class Article:
+    title: str
+    author: str
+```
+
+### Supported Field Types
+
+The decorator automatically maps 40+ Elasticsearch/OpenSearch field types to GraphQL:
+
+- **Text fields**: Text, Keyword, Wildcard → `str`
+- **Numeric fields**: Integer, Long, Float, Double → `int`, `float`
+- **Date fields**: Date, DateNanos → `datetime`
+- **Boolean**: Boolean → `bool`
+- **Geo types**: GeoPoint, GeoShape → Custom scalars
+- **Special types**: IP, Completion, TokenCount → Custom scalars
+- **Complex types**: Object, Nested → `dict` (nested type support coming)
+- **Arrays**: Multi-valued fields → `list[T]`
+
+See `examples/decorator_usage.py` for complete examples.
 
 ## Adapter API
 
@@ -440,13 +536,17 @@ strawberry-elastic/
 - [x] Graceful handling of optional dependencies
 - [x] 100+ comprehensive tests with real cluster integration
 
-#### Phase 2.2: Document Support (Next)
+#### Phase 2.2: Document Support ✅
 
-- [ ] `@elastic.type` decorator
-- [ ] Automatic field generation from Document classes
-- [ ] Field extraction from mappings
-- [ ] InnerDoc/nested type handling
-- [ ] Index metadata extraction
+- [x] `@elastic.type` decorator
+- [x] Automatic field generation from Document classes
+- [x] Field extraction from mappings
+- [x] `@elastic.field` decorator for custom fields
+- [x] Index metadata extraction
+- [x] Field exclusion support
+- [x] Hybrid mode (Document + custom fields)
+- [x] Field type overrides
+- [ ] InnerDoc/nested type handling (partial - infrastructure ready)
 
 #### Phase 2.3: Mapping Introspection
 
@@ -466,9 +566,9 @@ strawberry-elastic/
 
 #### Phase 2.6: Advanced Features
 
-- [ ] Hybrid mode (Document + custom fields)
-- [ ] Field overrides
-- [ ] Custom resolvers with `@elastic.field`
+- [x] Hybrid mode (Document + custom fields)
+- [x] Field overrides
+- [x] Custom resolvers with `@elastic.field`
 - [ ] Multi-field handling
 - [ ] Meta fields (score, highlights, etc.)
 

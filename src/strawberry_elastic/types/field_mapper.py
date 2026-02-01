@@ -327,6 +327,109 @@ class FieldMapper:
         args = get_args(python_type)
         return type(None) in args
 
+    def generate_fields_from_document(
+        self,
+        document_class: type,
+        exclude_fields: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """
+        Generate field definitions from a Document class.
+
+        Extracts all fields from the Document's mapping and converts them
+        to Python types suitable for Strawberry GraphQL.
+
+        Args:
+            document_class: The Document class to extract fields from
+            exclude_fields: List of field names to exclude
+
+        Returns:
+            Dictionary mapping field names to Python types
+
+        Example:
+            >>> from elasticsearch.dsl import Document, Text, Integer
+            >>> class MyDoc(Document):
+            ...     title = Text()
+            ...     count = Integer()
+            >>> mapper = FieldMapper()
+            >>> fields = mapper.generate_fields_from_document(MyDoc)
+            >>> print(fields)  # {'title': str | None, 'count': int | None}
+        """
+        ensure_dsl()
+
+        exclude = set(exclude_fields or [])
+        fields = {}
+
+        # Get the mapping from the document class
+        # Document classes have a _doc_type attribute that contains the mapping
+        if not hasattr(document_class, "_doc_type"):
+            return fields
+
+        doc_type = document_class._doc_type
+        if not hasattr(doc_type, "mapping"):
+            return fields
+
+        mapping = doc_type.mapping
+
+        # Iterate through all fields in the mapping
+        for field_name in mapping:  # type: ignore[attr-defined]
+            if field_name in exclude or field_name.startswith("_"):
+                continue
+
+            field = mapping[field_name]  # type: ignore[index]
+
+            # Map the field to a Python type
+            try:
+                python_type = self.map_document_field(field)
+                fields[field_name] = python_type
+            except Exception:  # nosec B112
+                # If we can't map the field, skip it
+                # This allows the library to be resilient to unknown field types
+                continue
+
+        return fields
+
+    def generate_nested_type(
+        self,
+        field_name: str,  # noqa: ARG002
+        field: Any,
+    ) -> dict[str, Any]:
+        """
+        Generate field definitions for a nested/object field.
+
+        Recursively processes nested objects to create field mappings.
+
+        Args:
+            field_name: Name of the nested field
+            field: The nested field instance
+
+        Returns:
+            Dictionary mapping nested field names to Python types
+
+        Example:
+            >>> from elasticsearch.dsl import Object, Text
+            >>> class AuthorObject(InnerDoc):
+            ...     name = Text()
+            ...     email = Text()
+            >>> nested_fields = mapper.generate_nested_type("author", AuthorObject)
+        """
+        ensure_dsl()
+
+        nested_fields = {}
+
+        # Check if this is an Object or Nested field with properties
+        if hasattr(field, "properties"):
+            for prop_name, prop_field in field.properties.to_dict().items():
+                if prop_name.startswith("_"):
+                    continue
+
+                try:
+                    python_type = self.map_document_field(prop_field)
+                    nested_fields[prop_name] = python_type
+                except Exception:  # nosec B112
+                    continue
+
+        return nested_fields
+
 
 __all__ = [
     "FieldMapper",

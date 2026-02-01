@@ -1,6 +1,7 @@
 """Strawberry GraphQL integration for Elasticsearch and OpenSearch."""
 
 from .clients import BaseElasticAdapter, create_adapter, get_adapter_for_client_type
+from .decorators import elastic
 from .exceptions import (
     AdapterError,
     BulkOperationError,
@@ -19,6 +20,7 @@ from .exceptions import (
 from .types import (
     Completion,
     FieldMapper,
+    FieldSource,
     GeoPoint,
     GeoShape,
     IPAddress,
@@ -42,6 +44,8 @@ __all__ = [
     "BaseElasticAdapter",
     "create_adapter",
     "get_adapter_for_client_type",
+    # Decorators
+    "elastic",
     # Type system
     "universal_dsl",
     "has_dsl",
@@ -50,6 +54,7 @@ __all__ = [
     "is_opensearch",
     "TypeInspector",
     "TypeInfo",
+    "FieldSource",
     "FieldMapper",
     "GeoPoint",
     "GeoShape",

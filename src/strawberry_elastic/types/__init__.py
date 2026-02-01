@@ -14,7 +14,7 @@ from ._dsl_compat import (
     universal_dsl,
 )
 from .field_mapper import FieldMapper
-from .inspector import TypeInfo, TypeInspector, TypeSource
+from .inspector import FieldSource, TypeInfo, TypeInspector, TypeSource
 from .scalars import Completion, GeoPoint, GeoShape, IPAddress, TokenCount
 
 
@@ -22,6 +22,7 @@ __all__ = [
     "Backend",
     "Completion",
     "FieldMapper",
+    "FieldSource",
     "GeoPoint",
     "GeoShape",
     "IPAddress",
